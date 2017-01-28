@@ -25,14 +25,14 @@ function getTasks(req, res, next) {
       myCache.get( token, function( err, value ){
         if( !err ){
           if(value === undefined){
-            collection.find({$or: [{uid: {$exists: false}},{$and:[{uid: {$exists: true}},{private: false}]}]}).toArray(function(err, items) {
+            collection.find({$or: [{uid: {$exists: false}},{$and:[{uid: {$exists: true}},{private: false}]}]}).sort({'_id': 1}).toArray(function(err, items) {
               if(err) { console.error(err) }
                 res.json({task:items});
             });
           }else{
             var uid = value.uid;
 
-            collection.find({$or: [{uid:{$exists: false}},{uid:uid}]}).toArray(function(err, items) {
+            collection.find({$or: [{uid:{$exists: false}},{uid:uid}]}).sort({'_id': 1}).toArray(function(err, items) {
               if(err) { console.error(err) }
                 res.json({task:items});
             });
@@ -40,7 +40,7 @@ function getTasks(req, res, next) {
         }
       });
   } else {
-    collection.find({$or: [{uid: {$exists: false}},{$and:[{uid: {$exists: true}},{private: false}]}]}).toArray(function(err, items) {
+    collection.find({$or: [{uid: {$exists: false}},{$and:[{uid: {$exists: true}},{private: false}]}]}).sort({'_id': 1}).toArray(function(err, items) {
       if(err) { console.error(err) }
         res.json({task:items});
     });
@@ -100,7 +100,16 @@ function completeTasks(req, res, next) {
 }
 
 function ping(req, res, next) {
-
+    var token = req.headers.authorization.split(" ")[1];
+    myCache.get( token, function( err, value ){
+      if( !err ){
+        if(value === undefined){
+          res.json({token:null});
+        }else{
+          res.json({token:token, username:value.username, uid:value.uid});
+        }
+      }
+    });
 }
 
 function createAccount(req, res, next) {

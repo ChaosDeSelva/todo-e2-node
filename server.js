@@ -32,7 +32,7 @@ function getTasks(req, res, next) {
           }else{
             var uid = value.uid;
 
-            collection.find({$or: [{uid:{$exists: false}},{uid:uid}]}).sort({'_id': 1}).toArray(function(err, items) {
+            collection.find({$or: [{uid:{$exists: false}},{uid:uid},{uid: null}]}).sort({'_id': 1}).toArray(function(err, items) {
               if(err) { console.error(err) }
                 res.json({task:items});
             });
@@ -40,7 +40,7 @@ function getTasks(req, res, next) {
         }
       });
   } else {
-    collection.find({$or: [{uid: {$exists: false}},{$and:[{uid: {$exists: true}},{private: false}]}]}).sort({'_id': 1}).toArray(function(err, items) {
+    collection.find({$or: [{uid: {$exists: false}},{uid: null},{$and:[{uid: {$exists: true}},{private: false}]}]}).sort({'_id': 1}).toArray(function(err, items) {
       if(err) { console.error(err) }
         res.json({task:items});
     });

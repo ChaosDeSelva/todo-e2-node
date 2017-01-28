@@ -168,6 +168,56 @@ function login(req, res, next) {
   });
 }
 
+function saveComments(req, res, next){
+  var token = req.headers.authorization.split(" ")[1];
+
+  if (typeof token !== 'undefined' && token !== null && token !== 'null'){
+    myCache.get( token, function( err, value ){
+      if( !err ){
+        if(value === undefined){
+          res.json({err:true});
+        }else{
+          var uid = value.uid;
+          var username = value.username;
+          var createdDate = req.body.comment.createdDate;
+          var message = req.body.comment.message;
+          var taskId = req.body.comment.task;
+          var cid = uuid.v4();
+
+          var comment = {
+            cid:cid,
+            uid:uid,
+            username:username,
+            createdDate:createdDate,
+            message:message
+          };
+
+          collection.update({_id:new mongodb.ObjectID(taskId)}, { $push: { comments: comment }}, {w:1}, function(err, result) {
+            res.json({comment:{cid:cid}});
+          });
+        }
+      }
+    });
+  } else {
+    res.json({err:true});
+  }
+}
+
+function getReport(req, res, next){
+
+  res.json([
+    ['Date','Created', 'Completed', { role: 'annotation' } ],
+    ['JAN 1', 10, 3, ''],
+    ['JAN 2', 16, 1, ''],
+    ['JAN 3', 2, 19, ''],
+    ['JAN 4', 5, 0, ''],
+    ['JAN 5', 8, 1, ''],
+    ['JAN 6', 2, 7, ''],
+    ['JAN 7', 1, 4, '']
+  ]);
+
+}
+
 var server = restify.createServer();
 
 restify.CORS.ALLOW_HEADERS.push('authorization');
@@ -180,9 +230,11 @@ server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
+server.get('/report', getReport);
 server.get('/tasks', getTasks);
 server.get('/tasks/:id', getTask);
 server.post('/tasks', saveTasks);
+server.post('/comments', saveComments);
 server.put('/tasks/:id', completeTasks);
 server.del('/tasks/:id', deleteTasks);
 

@@ -34,7 +34,7 @@ function getGroups(req, res, next) {
                 }else{
                     var uid = value.uid;
 
-                    group.find({$or: [{uid:{$exists: false}},{uid:new mongodb.ObjectID(uid)},{uid: null}]}).sort({'_id': 1}).toArray(function(err, items) {
+                    group.find({$or: [{uid:{$exists: false}},{uid:new mongodb.ObjectID(uid)},{uid: null},{$and:[{uid: {$exists: true}},{private: false}]}]}).sort({'_id': 1}).toArray(function(err, items) {
                         if(err) { console.error(err) }
                         res.json({group:items});
                     });

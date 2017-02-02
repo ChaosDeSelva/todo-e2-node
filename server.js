@@ -21,27 +21,27 @@ MongoClient.connect("mongodb://localhost:27017/taskmanager", function(err, db) {
 });
 
 function getGroups(req, res, next) {
-    var token = req.headers.authorization.split(" ")[1]; console.log(token);
+    var token = req.headers.authorization.split(" ")[1];
 
     if (typeof token !== 'undefined' && token !== null && token !== 'null'){
         myCache.get( token, function( err, value ){
             if( !err ){
-                if(value === undefined){ console.log(1);
+                if(value === undefined){
                     group.find({$or: [{uid: {$exists: false}},{$and:[{uid: {$exists: true}},{private: false}]}]}).sort({'_id': 1}).toArray(function(err, items) {
                         if(err) { console.error(err) }
                         res.json({group:items});
                     });
                 }else{
-                    var uid = value.uid; console.log(2); console.log(uid);
+                    var uid = value.uid;
 
-                    group.find({$or: [{uid:{$exists: false}},{uid:uid},{uid: null}]}).sort({'_id': 1}).toArray(function(err, items) {
-                        if(err) { console.error(err) } console.log(items);
+                    group.find({$or: [{uid:{$exists: false}},{uid:new mongodb.ObjectID(uid)},{uid: null}]}).sort({'_id': 1}).toArray(function(err, items) {
+                        if(err) { console.error(err) }
                         res.json({group:items});
                     });
                 }
             }
         });
-    } else { console.log(3);
+    } else {
         group.find({$or: [{uid: {$exists: false}},{uid: null},{$and:[{uid: {$exists: true}},{private: false}]}]}).sort({'_id': 1}).toArray(function(err, items) {
             if(err) { console.error(err) }
             res.json({group:items});
@@ -50,27 +50,25 @@ function getGroups(req, res, next) {
 }
 
 function getGroupTasks(req, res, next) {
-    var qparam = req.params.id; console.log(qparam);
+    var qparam = req.params.id;
     taskCol.find({ groups: { $in: [ qparam ] } }).toArray(function(err, items) {
         if(err) { console.error(err) }
-        console.log(items);
 
         res.json({groupTask:items});
     });
 }
 
 function getGroup(req, res, next) {
-    var groupId = req.params.id; console.log(groupId);console.log('ddddddddxxxxxx');
+    var groupId = req.params.id;
 
     group.find({}).toArray(function(err, items) {
         if(err) { console.error(err) }
-        console.log(items);
         res.json({group:items});
     });
 }
 
 function getTasks(req, res, next) {
-  var token = req.headers.authorization.split(" ")[1]; console.log(token);
+  var token = req.headers.authorization.split(" ")[1];
 
   if (typeof token !== 'undefined' && token !== null && token !== 'null'){
       myCache.get( token, function( err, value ){
@@ -83,7 +81,7 @@ function getTasks(req, res, next) {
           }else{
             var uid = value.uid;
 
-              taskCol.find({$or: [{uid:{$exists: false}},{uid:uid},{uid: null}]}).sort({'_id': 1}).toArray(function(err, items) {
+              taskCol.find({$or: [{uid:{$exists: false}},{uid:new mongodb.ObjectID(uid)},{uid: null}]}).sort({'_id': 1}).toArray(function(err, items) {
               if(err) { console.error(err) }
                 res.json({task:items});
             });
@@ -119,7 +117,7 @@ function saveTasks(req, res, next) {
               res.json({task:{_id:result.insertedId}});
             });
         }else{
-            task.uid = value.uid; console.log(task);
+            task.uid = value.uid;
 
             taskCol.insertOne(task, {w:1}, function(err, result) {
               res.json({task:{_id:result.insertedId}});
@@ -146,7 +144,7 @@ function saveGroups(req, res, next) {
               res.json({group:{_id:result.insertedId}});
             });
         }else{
-            groupData.uid = value.uid; console.log(group);
+            groupData.uid = value.uid;
 
             group.insertOne(groupData, {w:1}, function(err, result) {
               res.json({group:{_id:result.insertedId}});
